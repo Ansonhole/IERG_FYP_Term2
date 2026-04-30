@@ -1,0 +1,5 @@
+timestamp,user_query,user_skills,user_year,user_gpa,recommended_ids,feedback
+2026-04-04 20:40:35,推薦 Management Trainee,pthon,1,3.0,"CN, 54, CM, 53, A",53
+2026-04-04 20:41:19,推薦 Management Trainee,pthon,1,3.0,"CN, 54, CM, 53, A",B
+2026-04-04 20:42:01,推薦 Management Trainee,pthon,1,3.0,"CN, 54, CM, 53, A",A
+2026-04-04 20:55:10,RECOMMEND EDUCATION JOB,java,2,3.0,"44, BK, AW, AA, AP",AA

@@ -1,0 +1,10 @@
+Feedback Analysis Report - 2026-04-04 20:55
+==================================================
+Total feedback entries: 4
+Most liked jobs:
+feedback
+53    1
+B     1
+A     1
+AA    1
+Name: count, dtype: int64
