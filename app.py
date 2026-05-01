@@ -17,20 +17,24 @@ class QueryRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """首頁 - 渲染 HTML 模板"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    """首頁 - 渲染聊天室介面"""
+    return templates.TemplateResponse(
+        "index.html", 
+        {"request": request}   # 正確寫法：只傳一個 dict
+    )
 
 @app.post("/recommend")
 async def recommend(request: QueryRequest):
-    """處理推薦請求"""
+    """接收前端請求並呼叫推薦邏輯"""
     try:
-        print(f"收到請求 → Mode: {request.mode}, Query: {request.query}")
+        print(f"收到請求 → Mode: {request.mode}, Query: '{request.query}'")
 
         from src.recommender import generate_recommendation
 
+        # 簡單建立 user_profile（工作模式使用）
         if request.mode == 1:
             from src.user_profile import UserProfile
-            user_profile = UserProfile(year="3", skills=["coding"], interests="", gpa=3.0)
+            user_profile = UserProfile(year="3", skills=["coding"], interests="AI", gpa=3.0)
         else:
             user_profile = None
 
@@ -43,8 +47,7 @@ async def recommend(request: QueryRequest):
 
     except Exception as e:
         error_detail = traceback.format_exc()
-        print("後端錯誤詳情:")
-        print(error_detail)
+        print("後端錯誤詳情:\n", error_detail)
         
         return JSONResponse({
             "success": False,
