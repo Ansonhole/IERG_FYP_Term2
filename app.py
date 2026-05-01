@@ -17,10 +17,12 @@ class QueryRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    """首頁 - 渲染 HTML 模板"""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/recommend")
 async def recommend(request: QueryRequest):
+    """處理推薦請求"""
     try:
         print(f"收到請求 → Mode: {request.mode}, Query: {request.query}")
 
