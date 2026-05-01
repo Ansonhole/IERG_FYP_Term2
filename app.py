@@ -4,6 +4,9 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import uvicorn
 import traceback
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="CUHK Engineering Recommendation System")
 templates = Jinja2Templates(directory="templates")
@@ -19,24 +22,21 @@ async def home(request: Request):
 @app.post("/recommend")
 async def recommend(request: QueryRequest):
     try:
-        print(f"收到請求 - Mode: {request.mode}, Query: {request.query}")
+        print(f"收到請求 → Mode: {request.mode}, Query: {request.query}")
 
         from src.recommender import generate_recommendation
 
-        # 簡化處理：先不傳複雜的 user_profile
         if request.mode == 1:
-            # Job Mode - 使用簡單的空 profile
             from src.user_profile import UserProfile
-            user_profile = UserProfile(year="3", skills=["python"], interests="", gpa=3.0)
+            user_profile = UserProfile(year="3", skills=["coding"], interests="", gpa=3.0)
         else:
-            user_profile = None  # College Mode
+            user_profile = None
 
         answer, results = generate_recommendation(request.query, user_profile)
 
         return JSONResponse({
             "success": True,
-            "answer": answer,
-            "mode": request.mode
+            "answer": answer
         })
 
     except Exception as e:
@@ -46,9 +46,8 @@ async def recommend(request: QueryRequest):
         
         return JSONResponse({
             "success": False,
-            "error": str(e),
-            "detail": error_detail[-500:]  # 只顯示最後500字，避免太長
+            "error": str(e)
         }, status_code=500)
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000)
