@@ -1,10 +1,11 @@
 fastapi
 uvicorn[standard]
-python-multipart
-jinja2
+pydantic
+python-dotenv
+google-generativeai
+groq
 sentence-transformers
 faiss-cpu
 pandas
 numpy
-google-generativeai
-python-dotenv
+scikit-learn
