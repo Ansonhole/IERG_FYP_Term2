@@ -1,30 +1,29 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import uvicorn
 import traceback
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
 app = FastAPI(title="CUHK Engineering Recommendation System")
-templates = Jinja2Templates(directory="templates")
 
 class QueryRequest(BaseModel):
     query: str
     mode: int = 1
 
+# 直接讀取 index.html（避開 Jinja2 問題）
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    """使用美觀聊天室模板"""
+async def home():
     try:
-        return templates.TemplateResponse("index.html", {"request": request})
+        with open("templates/index.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content)
     except Exception as e:
-        # 如果模板出問題，fallback 到簡單頁面
-        print("模板載入失敗，使用簡單頁面:", str(e))
-        html = "<h1>系統正常運行</h1><p>聊天室模板載入失敗，請檢查 templates/index.html</p>"
-        return HTMLResponse(content=html)
+        print("無法讀取 index.html:", str(e))
+        return HTMLResponse(content="<h1>系統正常運行</h1><p>聊天室載入失敗，請聯絡開發者。</p>")
 
 @app.post("/recommend")
 async def recommend(request: QueryRequest):
