@@ -23,7 +23,7 @@
 
         <div style="padding:12px; background:#f0f0f0;">
             <select id="mode" onchange="switchMode()" style="width:100%; padding:10px; font-size:16px;">
-                <option value="0">1. 請選擇模式</option>
+                <option value="0">請選擇模式</option>
                 <option value="1">1. 工作推薦模式</option>
                 <option value="2">2. 學院推薦模式</option>
             </select>
@@ -102,7 +102,11 @@
                 } else {
                     // 全部填完，儲存資料並通知後端
                     userProfile = answers;
-                    addMessage("received", "✅ 資料已收集完成！現在你可以開始提問了。\n例如：推薦適合我的實習 / 推薦最適合我的學院");
+                    if (currentMode == 1) {
+                        addMessage("received", "✅ 資料已收集完成！現在你可以開始提問了。\n例如：推薦適合我的實習");
+                    } else {
+                        addMessage("received", "✅ 資料已收集完成！現在你可以開始提問了。\n例如：推薦最適合我的學院");
+                    }
                 }
             } 
             // 已收集完資料，正常推薦
