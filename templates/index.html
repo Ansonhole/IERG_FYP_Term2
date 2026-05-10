@@ -5,209 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CUHK 工程系推薦系統</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: #f4f4f5;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .chat-container {
-            display: flex;
-            width: 100%;
-            max-width: 1200px;
-            height: 100vh;
-            background-color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .sidebar {
-            width: 30%;
-            min-width: 280px;
-            border-right: 1px solid #e0e0e0;
-            background-color: #ffffff;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            background-color: #0066cc;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .contact-list {
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .contact-item:hover, .contact-item.active {
-            background-color: #f4f4f5;
-        }
-
-        .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0066cc, #3390ec);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 20px;
-            margin-right: 15px;
-        }
-
-        .contact-info h4 {
-            font-size: 16px;
-            color: #222;
-            margin-bottom: 4px;
-        }
-
-        .contact-info p {
-            font-size: 13px;
-            color: #888;
-        }
-
-        .main-chat {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #e5ddd5;
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-        }
-
-        .chat-header {
-            padding: 15px 20px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .chat-header h3 {
-            font-size: 18px;
-            color: #222;
-            margin-left: 10px;
-        }
-
-        .messages-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background-color: #e5ddd5;
-        }
-
-        .message {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.4;
-            position: relative;
-        }
-
-        .message.received {
-            align-self: flex-start;
-            background-color: #ffffff;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.sent {
-            align-self: flex-end;
-            background-color: #dcf8c6;
-            border-bottom-right-radius: 4px;
-        }
-
-        .input-area {
-            padding: 15px 20px;
-            background-color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .input-area input {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 25px;
-            background-color: #f1f3f4;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .input-area input:focus {
-            background-color: #e8eaed;
-        }
-
-        .send-btn {
-            background-color: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        select {
-            padding: 10px;
-            margin: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
+        body { font-family: system-ui, sans-serif; background: #f4f4f5; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #0066cc; color: white; padding: 20px; text-align: center; }
+        .messages-area { height: 60vh; overflow-y: auto; padding: 20px; background: #e5ddd5; }
+        .message { margin: 12px 0; padding: 14px 18px; border-radius: 18px; max-width: 85%; }
+        .received { background: white; align-self: flex-start; }
+        .sent { background: #dcf8c6; align-self: flex-end; }
+        .input-area { padding: 15px; background: #f8f9fa; border-top: 1px solid #ddd; }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="messages-area" id="chat"></div>
-        
-        <div style="padding:15px; background:#f8f9fa; border-top:1px solid #ddd;">
-            <select id="mode" style="padding:10px; width:100%; margin-bottom:10px;">
+    <div class="container">
+        <div class="header">
+            <h2>CUHK 工程系推薦系統</h2>
+        </div>
+
+        <div style="padding:15px; background:#f8f9fa;">
+            <select id="mode" onchange="changeMode()">
                 <option value="1">1. 工作推薦模式（實習 / 畢業職位）</option>
-                <option value="2">2. 學院推薦模式（幫助選擇 Chung Chi 等學院）</option>
+                <option value="2">2. 學院推薦模式（先填偏好）</option>
             </select>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="query" placeholder="輸入你的問題..." style="flex:1; padding:12px;">
-                <button id="sendBtn" style="padding:12px 20px; background:#0066cc; color:white; border:none; border-radius:8px;">送出</button>
-            </div>
+        </div>
+
+        <div class="messages-area" id="chat"></div>
+
+        <div class="input-area">
+            <input type="text" id="query" placeholder="輸入你的問題..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
+            <button id="sendBtn" style="margin-top:8px; padding:12px 24px; background:#0066cc; color:white; border:none; border-radius:8px; width:100%;">送出</button>
         </div>
     </div>
 
     <script>
+        let currentMode = 1;
+        let collegeProfile = null;
+
         const chat = document.getElementById("chat");
         const queryInput = document.getElementById("query");
-        const modeSelect = document.getElementById("mode");
         const sendBtn = document.getElementById("sendBtn");
 
         function addMessage(type, text) {
@@ -216,6 +50,17 @@
             div.textContent = text;
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
+        }
+
+        function changeMode() {
+            currentMode = parseInt(document.getElementById("mode").value);
+            chat.innerHTML = "";
+            if (currentMode === 2 && !collegeProfile) {
+                addMessage("received", "【學院推薦模式】\n請先回答以下問題，我會為你推薦最適合的學院：");
+                // 可以後續再做更完整的表單，這裡先用文字引導
+            } else if (currentMode === 1) {
+                addMessage("received", "已切換至工作推薦模式。\n請直接輸入你的問題，例如：「推薦 AI 相關實習」");
+            }
         }
 
         async function sendMessage() {
@@ -228,10 +73,11 @@
             try {
                 const res = await fetch("/recommend", {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         query: query, 
-                        mode: parseInt(modeSelect.value) 
+                        mode: currentMode,
+                        college_profile: collegeProfile
                     })
                 });
 
@@ -249,9 +95,9 @@
         sendBtn.addEventListener('click', sendMessage);
         queryInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
-        // 初始歡迎訊息
+        // 初始訊息
         window.onload = () => {
-            addMessage("received", "你好！我是 CUHK 工程系推薦系統。\n請先在上方選擇模式（工作推薦 或 學院推薦），然後開始提問～");
+            addMessage("received", "你好！我是 CUHK 工程系推薦系統。\n請在上方選擇模式開始使用。");
         };
     </script>
 </body>
