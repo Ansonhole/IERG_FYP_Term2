@@ -48,7 +48,7 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
             context = retrieved.to_string(index=False)
             
             if is_recommendation_intent:
-            prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
+                prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
 
 學生偏好：
 1. 住宿舍：{user_profile.get('residential')}
@@ -66,7 +66,6 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
 請根據以上資料推薦學院並詳細解釋。"""
             
             else:
-                
                 # === 一般問題：直接回答，不強制 grounding ===
                 prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
 
