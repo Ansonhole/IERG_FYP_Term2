@@ -7,8 +7,6 @@ import time
 from groq import Groq
 
 load_dotenv()
-
-# === 使用 Groq ===
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 from src.retriever import retrieve_top_k
@@ -20,9 +18,6 @@ def log_feedback(user_query: str, user_profile, recommended_ids: list, feedback:
     row = {
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'user_query': user_query,
-        'user_skills': ', '.join(user_profile.skills) if hasattr(user_profile, 'skills') else '',
-        'user_year': getattr(user_profile, 'year', ''),
-        'user_gpa': getattr(user_profile, 'gpa', ''),
         'recommended_ids': ', '.join(map(str, recommended_ids)),
         'feedback': feedback
     }
@@ -47,7 +42,6 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
 
         for i, (_, row) in enumerate(retrieved.iterrows(), 1):
             score = row.get('final_score', row.get('similarity_score', 0))
-           
             if row.get('type') == "college_choice":
                 print(f"【{i}】 學院：{row.get('college')} | 分數: {score:.3f}")
                 print(f"問題：{row.get('question')}")
@@ -63,26 +57,28 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
 
         context = "\n\n".join(context_parts)
 
-        # 建立 Prompt
+        # Prompt
         if is_college_mode:
-            prompt = f"""你是一位非常專業且有經驗的 CUHK 學院選擇顧問。
-學生偏好：
-- 住宿舍意願：{user_profile.get('residential')}
-- 基督教價值觀重視程度：{user_profile.get('christian')}
-- 通識教育興趣：{user_profile.get('ge_interest')}
-- 參與學院活動意願：{user_profile.get('activity')}
-- 更重視學術還是生活體驗：{user_profile.get('academic')}
-- 性格傾向：{user_profile.get('personality')}
+            prompt = f"""你是一位專業且有經驗的 CUHK 學院選擇顧問。
+學生回答：
+1. 住宿舍意願：{user_profile.get('residential')}
+2. 基督教價值觀：{user_profile.get('christian')}
+3. 通識教育興趣：{user_profile.get('ge_interest')}
+4. 參與學院活動：{user_profile.get('activity')}
+5. 學術 vs 生活：{user_profile.get('academic')}
+6. 性格傾向：{user_profile.get('personality')}
+
 用戶問題：{user_query}
-請根據學生偏好，推薦最適合的學院並詳細解釋原因。語氣親切專業，像老師在給個人建議。"""
+
+請根據以上答案，推薦1-2個最適合的學院，並詳細解釋原因。語氣親切，像老師在給個人建議。"""
         else:
             prompt = f"""你是一位專業親切的 CUHK 工程學院升學就業顧問。
 用戶問題：{user_query}
 參考資料：
 {context}
-請用自然、清楚的方式直接回答。"""
+請用自然、清楚、有幫助的方式回答。"""
 
-        # === Groq with Retry Mechanism ===
+        # Groq 呼叫 + 重試
         answer = "目前系統忙碌中，請稍後再試。"
         for attempt in range(5):
             try:
@@ -96,21 +92,20 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
                 break
             except Exception as e:
                 if attempt == 4:
-                    print(f"Groq API 最終失敗: {e}")
+                    print(f"Groq 最終失敗: {e}")
                 else:
                     wait = 2 ** attempt
-                    print(f"Groq 錯誤，重試中... ({attempt+1}/5) 等待 {wait} 秒")
+                    print(f"Groq 錯誤，重試中... ({attempt+1}/5)")
                     time.sleep(wait)
 
         print("💡 推薦分析與建議：")
         print(answer)
         print("\n" + "="*85)
 
-        # Web 環境下自動記錄（不使用 input）
         log_feedback(user_query, user_profile, recommended_ids, "web_auto")
 
         return answer, retrieved
 
     except Exception as e:
         print("generate_recommendation 錯誤:", str(e))
-        return f"抱歉，系統目前處理請求時發生錯誤，請稍後再試。", pd.DataFrame()
+        return f"抱歉，系統目前發生錯誤，請稍後再試。", pd.DataFrame()
