@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 import uvicorn
@@ -12,7 +12,7 @@ app = FastAPI(title="CUHK Engineering Recommendation System")
 class QueryRequest(BaseModel):
     query: str
     mode: int = 1
-    college_profile: list = None   # 用來接收學院模式的6個答案
+    profile_data: list = None   # 用來接收前端收集的答案
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -25,30 +25,33 @@ async def home():
 @app.post("/recommend")
 async def recommend(request: QueryRequest):
     try:
-        print(f"收到請求 → Mode: {request.mode}, Query: {request.query[:80]}...")
+        print(f"收到請求 → Mode: {request.mode}")
 
         from src.recommender import generate_recommendation
 
-        if request.mode == 1:  # 工作推薦模式
-            from src.user_profile import UserProfile
-            user_profile = UserProfile(
-                year="3", 
-                skills=["coding"], 
-                interests="AI, software engineering", 
-                gpa=3.0
-            )
-        else:  # 學院推薦模式
-            # 將前端傳來的 list 轉成 dict
-            answers = request.college_profile or ["無所謂"] * 6
+        # 轉換 profile_data 成後端可用的格式
+        if request.mode == 1 and request.profile_data:
+            # 工作模式： [year, skills, interests, gpa]
+            user_profile = {
+                "year": request.profile_data[0],
+                "skills": request.profile_data[1].split(",") if len(request.profile_data) > 1 else [],
+                "interests": request.profile_data[2] if len(request.profile_data) > 2 else "",
+                "gpa": float(request.profile_data[3]) if len(request.profile_data) > 3 else 3.0
+            }
+        elif request.mode == 2 and request.profile_data:
+            # 學院模式：6個答案
+            ans = request.profile_data
             user_profile = {
                 "mode": "college",
-                "residential": answers[0] if len(answers) > 0 else "無所謂",
-                "christian": answers[1] if len(answers) > 1 else "無所謂",
-                "ge_interest": answers[2] if len(answers) > 2 else "中",
-                "activity": answers[3] if len(answers) > 3 else "無所謂",
-                "academic": answers[4] if len(answers) > 4 else "無所謂",
-                "personality": answers[5] if len(answers) > 5 else "無所謂"
+                "residential": ans[0] if len(ans)>0 else "",
+                "christian": ans[1] if len(ans)>1 else "",
+                "ge_interest": ans[2] if len(ans)>2 else "",
+                "activity": ans[3] if len(ans)>3 else "",
+                "academic": ans[4] if len(ans)>4 else "",
+                "personality": ans[5] if len(ans)>5 else ""
             }
+        else:
+            user_profile = None
 
         answer, results = generate_recommendation(request.query, user_profile)
         
