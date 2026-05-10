@@ -30,6 +30,10 @@ def log_feedback(user_query: str, user_profile, recommended_ids: list, feedback:
 
 def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
     try:
+        # === 判斷是否為推薦意圖 ===
+        recommend_keywords = ["推薦", "suggest", "最適合", "適合我", "找工作", "找實習", "recommend", "best for me", "學院推薦"]
+        is_recommendation_intent = any(kw in user_query.lower() for kw in recommend_keywords)
+
         retrieved = retrieve_top_k(user_query, user_profile, top_k=top_k)
         recommended_ids = retrieved['id'].astype(str).tolist() if not retrieved.empty else []
 
@@ -37,78 +41,60 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
         print("🎯 CUHK 工程系個人化推薦系統")
         print("="*85 + "\n")
 
-        context_parts = []
-        is_college_mode = isinstance(user_profile, dict) and user_profile.get("mode") == "college"
-
-        for i, (_, row) in enumerate(retrieved.iterrows(), 1):
-            score = row.get('final_score', row.get('similarity_score', 0))
+        # ==================== Prompt 選擇 ====================
+        if is_recommendation_intent:
+            # === 推薦模式：強制 grounding ===
+            is_college_mode = isinstance(user_profile, dict) and user_profile.get("mode") == "college"
             
-            if row.get('type') == "college_choice":
-                print(f"【{i}】 學院：{row.get('college')} | 分數: {score:.3f}")
-                print(f"問題：{row.get('question')}")
-                print(f"回答：{str(row.get('answer', ''))[:400]}...\n")
-                context_parts.append(f"學院：{row.get('college')}\nQ: {row.get('question')}\nA: {row.get('answer')}")
-            else:
-                print(f"【{i}】 ID: {row.get('id')} | 分數: {score:.3f}")
-                print(f"職位：{row.get('job_title', row.get('title', '未提供'))}")
-                print(f"公司：{row.get('company_name', row.get('company', '未提供'))}")
-                print(f"截止日期：{row.get('deadline', '未提供')}")
-                print("-" * 70)
-                context_parts.append(f"職位：{row.get('job_title', row.get('title', ''))} at {row.get('company_name', '')}")
+            context = retrieved.to_string(index=False)
 
-        context = "\n\n".join(context_parts)
+            if is_college_mode:
+                prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
 
-        # ==================== Prompt 優化 ====================
-        if is_college_mode:
-            prompt = f"""你是一位非常了解 CUHK 九所學院的專業升學顧問。
+學生偏好：
+1. 住宿舍：{user_profile.get('residential')}
+2. 基督教價值觀：{user_profile.get('christian')}
+3. 通識教育：{user_profile.get('ge_interest')}
+4. 學院活動：{user_profile.get('activity')}
+5. 學術/生活：{user_profile.get('academic')}
+6. 性格：{user_profile.get('personality')}
 
-學生填寫的偏好：
-1. 住宿舍意願：{user_profile.get('residential')}
-2. 基督教價值觀重視程度：{user_profile.get('christian')}
-3. 通識教育興趣：{user_profile.get('ge_interest')}
-4. 參與學院活動意願：{user_profile.get('activity')}
-5. 學術 vs 生活體驗重視程度：{user_profile.get('academic')}
-6. 性格傾向：{user_profile.get('personality')}
-
-用戶目前問題：{user_query}
-
-請根據以上資訊，推薦 **1-2 所最適合的學院**，並詳細解釋原因。語氣親切、專業，像老師在給學生一對一建議。"""
-        else:
-            # 工作推薦模式
-            prompt = f"""你是一位專業且親切的 CUHK 工程系職業顧問。
-
-學生背景：
-- 年級：{getattr(user_profile, 'year', user_profile.get('year', '未知'))}
-- 主要技能：{getattr(user_profile, 'skills', user_profile.get('skills', []))}
-- 興趣領域：{getattr(user_profile, 'interests', user_profile.get('interests', ''))}
-- GPA：{getattr(user_profile, 'gpa', user_profile.get('gpa', ''))}
+真實資料：
+{context}
 
 用戶問題：{user_query}
 
-以下是系統為他檢索到的相關職位：
+請根據以上資料推薦學院並詳細解釋。"""
+            else:
+                prompt = f"""你是一位嚴謹的 CUHK 工程系職業顧問，**只能根據以下提供的真實職位資料**回答。
+
+學生背景：
+- 年級：{getattr(user_profile, 'year', user_profile.get('year', '未知'))}
+- 技能：{getattr(user_profile, 'skills', user_profile.get('skills', []))}
+- 興趣：{getattr(user_profile, 'interests', user_profile.get('interests', ''))}
+- GPA：{getattr(user_profile, 'gpa', user_profile.get('gpa', ''))}
+
+真實職位資料：
 {context}
 
-請給出自然、實用且有說服力的推薦建議，告訴他為什麼這些職位適合他。"""
+用戶問題：{user_query}
+
+請根據以上資料推薦適合的職位，並清楚說明原因。"""
+        else:
+            # === 一般問題：直接回答，不強制 grounding ===
+            prompt = f"""你是一位友好、專業的 CUHK 工程系 AI 助手。
+用戶問題：{user_query}
+請直接、清楚地回答。"""
 
         # ==================== Groq 呼叫 ====================
-        answer = "目前系統忙碌中，請稍後再試。"
-        for attempt in range(5):
-            try:
-                response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.75,
-                    max_tokens=1200
-                )
-                answer = response.choices[0].message.content.strip()
-                break
-            except Exception as e:
-                if attempt == 4:
-                    print(f"Groq API 最終失敗: {e}")
-                else:
-                    wait = 2 ** attempt
-                    print(f"Groq 錯誤，重試中... ({attempt+1}/5)")
-                    time.sleep(wait)
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=1000
+        )
+
+        answer = response.choices[0].message.content.strip()
 
         print("💡 推薦分析與建議：")
         print(answer)
@@ -119,5 +105,5 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
         return answer, retrieved
 
     except Exception as e:
-        print("generate_recommendation 錯誤:", str(e))
-        return f"抱歉，系統目前發生錯誤，請稍後再試。", pd.DataFrame()
+        print("錯誤:", str(e))
+        return "抱歉，系統目前發生錯誤，請稍後再試。", pd.DataFrame()
