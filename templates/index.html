@@ -23,6 +23,7 @@
 
         <div style="padding:12px; background:#f0f0f0;">
             <select id="mode" onchange="switchMode()" style="width:100%; padding:10px; font-size:16px;">
+                <option value="0">1. 請選擇模式</option>
                 <option value="1">1. 工作推薦模式</option>
                 <option value="2">2. 學院推薦模式</option>
             </select>
@@ -37,7 +38,7 @@
     </div>
 
     <script>
-        let currentMode = 1;
+        let currentMode = 0;
         let userProfile = null;        // 已填好的資料
         let currentQuestions = [];
         let answers = [];
@@ -69,7 +70,7 @@
                 ];
                 addMessage("received", "【工作推薦模式】\n\n請依序回答以下問題：");
                 addMessage("received", currentQuestions[0]);
-            } else {
+            } else if (currentMode === 2){
                 currentQuestions = [
                     "1. 你希望住學院宿舍嗎？ (是 / 否 / 無所謂)",
                     "2. 你對基督教氛圍和價值觀的重視程度？ (高 / 中 / 低 / 無所謂)",
@@ -80,6 +81,8 @@
                 ];
                 addMessage("received", "【學院推薦模式】\n\n請依序回答以下問題，我會為你推薦最適合的學院：");
                 addMessage("received", currentQuestions[0]);
+            } else {
+                addMessage("received", "你未選擇任何模式，請先在上方選擇模式。");
             }
         }
 
