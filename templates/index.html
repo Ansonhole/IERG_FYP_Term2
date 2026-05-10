@@ -190,38 +190,16 @@
 </head>
 <body>
     <div class="chat-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                CUHK 工程系推薦系統
-            </div>
-            <div class="contact-list">
-                <div class="contact-item active">
-                    <div class="avatar">R</div>
-                    <div class="contact-info">
-                        <h4>推薦系統</h4>
-                        <p>Internship • Graduate Job • College</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-chat">
-            <div class="chat-header">
-                <h3>推薦系統</h3>
-            </div>
-
-            <div style="padding:10px 20px; background:#f8f9fa;">
-                <select id="mode">
-                    <option value="1">工作推薦模式（實習 / 畢業職位）</option>
-                    <option value="2">學院推薦模式</option>
-                </select>
-            </div>
-
-            <div class="messages-area" id="chat"></div>
-
-            <div class="input-area">
-                <input type="text" id="query" placeholder="輸入你的問題，例如：推薦 AI 實習..." autocomplete="off">
-                <button class="send-btn" id="sendBtn">↑</button>
+        <div class="messages-area" id="chat"></div>
+        
+        <div style="padding:15px; background:#f8f9fa; border-top:1px solid #ddd;">
+            <select id="mode" style="padding:10px; width:100%; margin-bottom:10px;">
+                <option value="1">1. 工作推薦模式（實習 / 畢業職位）</option>
+                <option value="2">2. 學院推薦模式（幫助選擇 Chung Chi 等學院）</option>
+            </select>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="query" placeholder="輸入你的問題..." style="flex:1; padding:12px;">
+                <button id="sendBtn" style="padding:12px 20px; background:#0066cc; color:white; border:none; border-radius:8px;">送出</button>
             </div>
         </div>
     </div>
@@ -231,6 +209,14 @@
         const queryInput = document.getElementById("query");
         const modeSelect = document.getElementById("mode");
         const sendBtn = document.getElementById("sendBtn");
+
+        function addMessage(type, text) {
+            const div = document.createElement("div");
+            div.className = `message ${type}`;
+            div.textContent = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
 
         async function sendMessage() {
             const query = queryInput.value.trim();
@@ -242,7 +228,7 @@
             try {
                 const res = await fetch("/recommend", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ 
                         query: query, 
                         mode: parseInt(modeSelect.value) 
@@ -250,34 +236,22 @@
                 });
 
                 const data = await res.json();
-
                 if (data.success) {
                     addMessage("received", data.answer);
                 } else {
                     addMessage("received", "錯誤：" + (data.error || "無法取得回應"));
                 }
             } catch (err) {
-                addMessage("received", "網路錯誤，請確認後端是否正常運行。");
+                addMessage("received", "網路錯誤，請稍後再試。");
             }
         }
 
-        function addMessage(type, text) {
-            const div = document.createElement("div");
-            div.className = `message ${type}`;
-            div.textContent = text;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        // 事件監聽
         sendBtn.addEventListener('click', sendMessage);
-        queryInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        queryInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
         // 初始歡迎訊息
         window.onload = () => {
-            addMessage("received", "你好！我是 CUHK 工程系推薦系統。\n請選擇模式並開始提問～");
+            addMessage("received", "你好！我是 CUHK 工程系推薦系統。\n請先在上方選擇模式（工作推薦 或 學院推薦），然後開始提問～");
         };
     </script>
 </body>
