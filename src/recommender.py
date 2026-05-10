@@ -42,14 +42,13 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
         print("="*85 + "\n")
 
         # ==================== Prompt 選擇 ====================
-        if is_recommendation_intent:
-            # === 推薦模式：強制 grounding ===
-            is_college_mode = isinstance(user_profile, dict) and user_profile.get("mode") == "college"
-            
-            context = retrieved.to_string(index=False)
+        is_college_mode = isinstance(user_profile, dict) and user_profile.get("mode") == "college"
 
-            if is_college_mode:
-                prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
+        if is_college_mode:
+            context = retrieved.to_string(index=False)
+            
+            if is_recommendation_intent:
+            prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
 
 學生偏好：
 1. 住宿舍：{user_profile.get('residential')}
@@ -65,7 +64,30 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
 用戶問題：{user_query}
 
 請根據以上資料推薦學院並詳細解釋。"""
+            
             else:
+                
+                # === 一般問題：直接回答，不強制 grounding ===
+                prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
+
+學生偏好：
+1. 住宿舍：{user_profile.get('residential')}
+2. 基督教價值觀：{user_profile.get('christian')}
+3. 通識教育：{user_profile.get('ge_interest')}
+4. 學院活動：{user_profile.get('activity')}
+5. 學術/生活：{user_profile.get('academic')}
+6. 性格：{user_profile.get('personality')}
+
+真實資料：
+{context}
+
+用戶問題：{user_query}
+
+請根據以上資料回答並詳細解釋。"""
+            
+        else:
+            context = retrieved.to_string(index=False)
+            if is_recommendation_intent:
                 prompt = f"""你是一位嚴謹的 CUHK 工程系職業顧問，**只能根據以下提供的真實職位資料**回答。
 
 學生背景：
@@ -80,11 +102,22 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
 用戶問題：{user_query}
 
 請根據以上資料推薦適合的職位，並清楚說明原因。"""
-        else:
-            # === 一般問題：直接回答，不強制 grounding ===
-            prompt = f"""你是一位友好、專業的 CUHK 工程系 AI 助手。
+            else:
+                prompt = f"""你是一位嚴謹的 CUHK 工程系職業顧問，**只能根據以下提供的真實職位資料**回答。
+
+學生背景：
+- 年級：{getattr(user_profile, 'year', user_profile.get('year', '未知'))}
+- 技能：{getattr(user_profile, 'skills', user_profile.get('skills', []))}
+- 興趣：{getattr(user_profile, 'interests', user_profile.get('interests', ''))}
+- GPA：{getattr(user_profile, 'gpa', user_profile.get('gpa', ''))}
+
+真實職位資料：
+{context}
+
 用戶問題：{user_query}
-請直接、清楚地回答。"""
+
+請根據以上資料回答並清楚說明原因。"""
+                
 
         # ==================== Groq 呼叫 ====================
         response = client.chat.completions.create(
