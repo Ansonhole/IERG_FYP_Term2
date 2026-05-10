@@ -38,7 +38,9 @@
 
     <script>
         let currentMode = 1;
-        let collegeAnswers = [];
+        let userProfile = null;        // 已填好的資料
+        let currentQuestions = [];
+        let answers = [];
 
         const chat = document.getElementById("chat");
         const queryInput = document.getElementById("query");
@@ -55,13 +57,29 @@
         function switchMode() {
             currentMode = parseInt(document.getElementById("mode").value);
             chat.innerHTML = "";
-            collegeAnswers = [];
+            userProfile = null;
+            answers = [];
 
-            if (currentMode === 2) {
-                addMessage("received", "【學院推薦模式】\n\n請依序回答以下問題，我會根據你的答案推薦最適合的學院：");
-                addMessage("received", "1. 你希望住學院宿舍嗎？ (是 / 否 / 無所謂)");
+            if (currentMode === 1) {
+                currentQuestions = [
+                    "請輸入你的年級（例如 2、3、4）：",
+                    "請輸入主要技能（用逗號分隔，例如 python, machine learning）：",
+                    "請輸入興趣領域（用逗號分隔，例如 AI, software engineering）：",
+                    "請輸入你的 GPA（例如 3.5）："
+                ];
+                addMessage("received", "【工作推薦模式】\n\n請依序回答以下問題：");
+                addMessage("received", currentQuestions[0]);
             } else {
-                addMessage("received", "已切換至工作推薦模式。\n請直接輸入你的問題，例如「推薦 AI 實習」");
+                currentQuestions = [
+                    "1. 你希望住學院宿舍嗎？ (是 / 否 / 無所謂)",
+                    "2. 你對基督教氛圍和價值觀的重視程度？ (高 / 中 / 低 / 無所謂)",
+                    "3. 你對通識教育（GE課程）的興趣程度？ (高 / 中 / 低)",
+                    "4. 你喜歡參加學院活動、領導培訓、交流嗎？ (是 / 否 / 無所謂)",
+                    "5. 你比較重視學院的學術氛圍還是生活體驗？ (學術 / 生活 / 兩者都要)",
+                    "6. 你的性格比較內向還是外向？ (內向 / 外向 / 都可以)"
+                ];
+                addMessage("received", "【學院推薦模式】\n\n請依序回答以下問題，我會為你推薦最適合的學院：");
+                addMessage("received", currentQuestions[0]);
             }
         }
 
@@ -72,24 +90,20 @@
             addMessage("sent", text);
             queryInput.value = "";
 
-            if (currentMode === 2 && collegeAnswers.length < 6) {
-                collegeAnswers.push(text);
-                
-                const questions = [
-                    "2. 你對基督教氛圍和價值觀的重視程度？ (高 / 中 / 低 / 無所謂)",
-                    "3. 你對通識教育（GE課程）的興趣程度？ (高 / 中 / 低)",
-                    "4. 你喜歡參加學院活動、領導培訓、交流嗎？ (是 / 否 / 無所謂)",
-                    "5. 你比較重視學院的學術氛圍還是生活體驗？ (學術 / 生活 / 兩者都要)",
-                    "6. 你的性格比較內向還是外向？ (內向 / 外向 / 都可以)"
-                ];
+            // 還在收集資料階段
+            if (!userProfile && answers.length < currentQuestions.length) {
+                answers.push(text);
 
-                if (collegeAnswers.length < 6) {
-                    addMessage("received", questions[collegeAnswers.length - 1]);
+                if (answers.length < currentQuestions.length) {
+                    addMessage("received", currentQuestions[answers.length]);
                 } else {
-                    addMessage("received", "✅ 所有問題已回答完成！現在你可以輸入問題，例如「推薦最適合我的學院」");
+                    // 全部填完，儲存資料並通知後端
+                    userProfile = answers;
+                    addMessage("received", "✅ 資料已收集完成！現在你可以開始提問了。\n例如：推薦適合我的實習 / 推薦最適合我的學院");
                 }
-            } else {
-                // 正常發送請求給後端
+            } 
+            // 已收集完資料，正常推薦
+            else {
                 try {
                     const res = await fetch("/recommend", {
                         method: "POST",
@@ -97,7 +111,7 @@
                         body: JSON.stringify({ 
                             query: text, 
                             mode: currentMode,
-                            college_profile: currentMode === 2 ? collegeAnswers : null
+                            profile_data: userProfile
                         })
                     });
 
@@ -113,7 +127,7 @@
         queryInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
         window.onload = () => {
-            addMessage("received", "歡迎使用！請先在上方選擇模式。");
+            addMessage("received", "歡迎使用 CUHK 工程系推薦系統！\n請先在上方選擇模式。");
         };
     </script>
 </body>
