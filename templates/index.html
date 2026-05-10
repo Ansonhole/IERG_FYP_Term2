@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CUHK 工程系推薦系統</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f4f4f5; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: #0066cc; color: white; padding: 20px; text-align: center; }
-        .messages-area { height: 60vh; overflow-y: auto; padding: 20px; background: #e5ddd5; }
-        .message { margin: 12px 0; padding: 14px 18px; border-radius: 18px; max-width: 85%; }
-        .received { background: white; align-self: flex-start; }
-        .sent { background: #dcf8c6; align-self: flex-end; }
-        .input-area { padding: 15px; background: #f8f9fa; border-top: 1px solid #ddd; }
+        body { font-family: system-ui, sans-serif; background: #f4f4f5; margin:0; padding:20px; }
+        .container { max-width: 900px; margin:auto; background:white; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); overflow:hidden; }
+        .header { background:#0066cc; color:white; padding:20px; text-align:center; }
+        .messages-area { height:65vh; overflow-y:auto; padding:20px; background:#e5ddd5; }
+        .message { margin:12px 0; padding:14px 18px; border-radius:18px; max-width:85%; }
+        .received { background:white; align-self:flex-start; }
+        .sent { background:#dcf8c6; align-self:flex-end; }
+        .input-area { padding:15px; background:#f8f9fa; border-top:1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -21,8 +21,8 @@
             <h2>CUHK 工程系推薦系統</h2>
         </div>
 
-        <div style="padding:15px; background:#f8f9fa;">
-            <select id="mode" onchange="changeMode()">
+        <div style="padding:12px; background:#f0f0f0;">
+            <select id="mode" onchange="switchMode()" style="width:100%; padding:10px; font-size:16px;">
                 <option value="1">1. 工作推薦模式（實習 / 畢業職位）</option>
                 <option value="2">2. 學院推薦模式（先填偏好）</option>
             </select>
@@ -31,8 +31,8 @@
         <div class="messages-area" id="chat"></div>
 
         <div class="input-area">
-            <input type="text" id="query" placeholder="輸入你的問題..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
-            <button id="sendBtn" style="margin-top:8px; padding:12px 24px; background:#0066cc; color:white; border:none; border-radius:8px; width:100%;">送出</button>
+            <input type="text" id="query" placeholder="輸入訊息..." style="width:100%; padding:12px; border-radius:8px;">
+            <button id="sendBtn" style="margin-top:8px; width:100%; padding:12px; background:#0066cc; color:white; border:none; border-radius:8px;">送出</button>
         </div>
     </div>
 
@@ -52,14 +52,15 @@
             chat.scrollTop = chat.scrollHeight;
         }
 
-        function changeMode() {
+        function switchMode() {
             currentMode = parseInt(document.getElementById("mode").value);
             chat.innerHTML = "";
-            if (currentMode === 2 && !collegeProfile) {
-                addMessage("received", "【學院推薦模式】\n請先回答以下問題，我會為你推薦最適合的學院：");
-                // 可以後續再做更完整的表單，這裡先用文字引導
-            } else if (currentMode === 1) {
-                addMessage("received", "已切換至工作推薦模式。\n請直接輸入你的問題，例如：「推薦 AI 相關實習」");
+            
+            if (currentMode === 2) {
+                addMessage("received", "【學院推薦模式】\n\n請回答以下問題，我會為你推薦最適合的學院：");
+                addMessage("received", "1. 你希望住學院宿舍嗎？ (是 / 否 / 無所謂)");
+            } else {
+                addMessage("received", "已切換至工作推薦模式。\n請直接輸入你的問題，例如「推薦 AI 實習」");
             }
         }
 
@@ -73,7 +74,7 @@
             try {
                 const res = await fetch("/recommend", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ 
                         query: query, 
                         mode: currentMode,
@@ -82,11 +83,7 @@
                 });
 
                 const data = await res.json();
-                if (data.success) {
-                    addMessage("received", data.answer);
-                } else {
-                    addMessage("received", "錯誤：" + (data.error || "無法取得回應"));
-                }
+                addMessage("received", data.success ? data.answer : "錯誤：" + data.error);
             } catch (err) {
                 addMessage("received", "網路錯誤，請稍後再試。");
             }
@@ -95,9 +92,8 @@
         sendBtn.addEventListener('click', sendMessage);
         queryInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
-        // 初始訊息
         window.onload = () => {
-            addMessage("received", "你好！我是 CUHK 工程系推薦系統。\n請在上方選擇模式開始使用。");
+            addMessage("received", "歡迎使用 CUHK 工程系推薦系統！\n請先在上方選擇模式。");
         };
     </script>
 </body>
