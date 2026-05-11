@@ -53,9 +53,13 @@ async def recommend(request: QueryRequest):
         else:
             user_profile = None
 
-        answer, results = generate_recommendation(request.query, user_profile)
+        answer, results, recommended_ids = generate_recommendation(request.query, user_profile)
         
-        return JSONResponse({"success": True, "answer": answer})
+        return JSONResponse({
+            "success": True, 
+            "answer": answer,
+            "recommended_ids": recommended_ids   # 新增這行
+        })
 
     except Exception as e:
         print("後端錯誤:", str(e))
