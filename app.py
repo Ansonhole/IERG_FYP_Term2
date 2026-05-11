@@ -82,7 +82,7 @@ async def evaluate(request: dict):
         return JSONResponse({
             "success": True,
             "metrics": metrics,
-            "message": "感謝你的評估！已記錄本次推薦品質。"
+            "message": "Thank you for your evaluation! The quality of this recommendation has been recorded."
         })
         
     except Exception as e:
