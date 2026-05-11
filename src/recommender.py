@@ -164,7 +164,7 @@ Please answer the question clearly based on the provided data."""
 
         log_feedback(user_query, user_profile, recommended_ids, "web_auto")
 
-        return answer, retrieved
+        return answer, retrieved, recommended_ids
 
     except Exception as e:
         print("Error:", str(e))
