@@ -30,7 +30,7 @@ def log_feedback(user_query: str, user_profile, recommended_ids: list, feedback:
 
 def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
     try:
-        # === 判斷是否為推薦意圖 ===
+        # === Detect recommendation intent ===
         recommend_keywords = ["推薦", "suggest", "最適合", "適合我", "找工作", "找實習", "recommend", "best for me", "學院推薦"]
         is_recommendation_intent = any(kw in user_query.lower() for kw in recommend_keywords)
 
@@ -38,97 +38,96 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
         recommended_ids = retrieved['id'].astype(str).tolist() if not retrieved.empty else []
 
         print("\n" + "="*85)
-        print("🎯 CUHK 工程系個人化推薦系統")
+        print("🎯 CUHK Engineering Personalized Recommendation System")
         print("="*85 + "\n")
 
-        # ==================== Prompt 選擇 ====================
         is_college_mode = isinstance(user_profile, dict) and user_profile.get("mode") == "college"
 
+        # ==================== Prompt Selection (English) ====================
         if is_college_mode:
             context = retrieved.to_string(index=False)
             
             if is_recommendation_intent:
-                prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
+                prompt = f"""You are a rigorous and experienced CUHK college selection advisor. You must ONLY answer based on the real data provided below. Do not make up information.
 
-學生偏好：
-1. 住宿舍：{user_profile.get('residential')}
-2. 基督教價值觀：{user_profile.get('christian')}
-3. 通識教育：{user_profile.get('ge_interest')}
-4. 學院活動：{user_profile.get('activity')}
-5. 學術/生活：{user_profile.get('academic')}
-6. 性格：{user_profile.get('personality')}
+Student's Preferences:
+1. Willing to live in college hostel: {user_profile.get('residential')}
+2. Importance of Christian values: {user_profile.get('christian')}
+3. Interest in General Education (GE): {user_profile.get('ge_interest')}
+4. Willing to join college activities: {user_profile.get('activity')}
+5. Academic vs Campus Life: {user_profile.get('academic')}
+6. Personality: {user_profile.get('personality')}
 
-真實資料：
+Real College Data:
 {context}
 
-用戶問題：{user_query}
+User Question: {user_query}
 
-請根據以上資料推薦學院並詳細解釋。"""
-            
+Please recommend the most suitable college(s) and explain in detail why they are suitable."""
             else:
-                # === 一般問題：直接回答，不強制 grounding ===
-                prompt = f"""你是一位嚴謹的 CUHK 學院選擇顧問，**只能根據以下提供的真實資料**回答。
+                prompt = f"""You are a rigorous CUHK college advisor. Answer based on the real data provided.
 
-學生偏好：
-1. 住宿舍：{user_profile.get('residential')}
-2. 基督教價值觀：{user_profile.get('christian')}
-3. 通識教育：{user_profile.get('ge_interest')}
-4. 學院活動：{user_profile.get('activity')}
-5. 學術/生活：{user_profile.get('academic')}
-6. 性格：{user_profile.get('personality')}
+Student's Preferences:
+1. Willing to live in college hostel: {user_profile.get('residential')}
+2. Importance of Christian values: {user_profile.get('christian')}
+3. Interest in General Education: {user_profile.get('ge_interest')}
+4. Willing to join college activities: {user_profile.get('activity')}
+5. Academic vs Campus Life: {user_profile.get('academic')}
+6. Personality: {user_profile.get('personality')}
 
-真實資料：
+Real Data:
 {context}
 
-用戶問題：{user_query}
+User Question: {user_query}
 
-請根據以上資料回答並詳細解釋。"""
-            
+Please answer clearly and explain based on the data."""
+
         else:
+            # Work / Internship Mode
             context = retrieved.to_string(index=False)
+            
             if is_recommendation_intent:
-                prompt = f"""你是一位嚴謹的 CUHK 工程系職業顧問，**只能根據以下提供的真實職位資料**回答。
+                prompt = f"""You are a rigorous and professional CUHK Engineering career advisor. You must ONLY answer based on the real job data provided below.
 
-學生背景：
-- 年級：{getattr(user_profile, 'year', user_profile.get('year', '未知'))}
-- 技能：{getattr(user_profile, 'skills', user_profile.get('skills', []))}
-- 興趣：{getattr(user_profile, 'interests', user_profile.get('interests', ''))}
-- GPA：{getattr(user_profile, 'gpa', user_profile.get('gpa', ''))}
+Student Background:
+- Year: {getattr(user_profile, 'year', user_profile.get('year', 'Unknown'))}
+- Skills: {getattr(user_profile, 'skills', user_profile.get('skills', []))}
+- Interests: {getattr(user_profile, 'interests', user_profile.get('interests', ''))}
+- GPA: {getattr(user_profile, 'gpa', user_profile.get('gpa', ''))}
 
-真實職位資料：
+Real Job Data:
 {context}
 
-用戶問題：{user_query}
+User Question: {user_query}
 
-請根據以上資料推薦適合的職位，並清楚說明原因。"""
+Please recommend suitable positions and clearly explain why they are suitable for this student."""
             else:
-                prompt = f"""你是一位嚴謹的 CUHK 工程系職業顧問，**只能根據以下提供的真實職位資料**回答。
+                prompt = f"""You are a professional CUHK Engineering career advisor. Answer based on the real data provided.
 
-學生背景：
-- 年級：{getattr(user_profile, 'year', user_profile.get('year', '未知'))}
-- 技能：{getattr(user_profile, 'skills', user_profile.get('skills', []))}
-- 興趣：{getattr(user_profile, 'interests', user_profile.get('interests', ''))}
-- GPA：{getattr(user_profile, 'gpa', user_profile.get('gpa', ''))}
+Student Background:
+- Year: {getattr(user_profile, 'year', user_profile.get('year', 'Unknown'))}
+- Skills: {getattr(user_profile, 'skills', user_profile.get('skills', []))}
+- Interests: {getattr(user_profile, 'interests', user_profile.get('interests', ''))}
+- GPA: {getattr(user_profile, 'gpa', user_profile.get('gpa', ''))}
 
-真實職位資料：
+Real Job Data:
 {context}
 
-用戶問題：{user_query}
+User Question: {user_query}
 
-請根據以上資料回答並清楚說明原因。"""
-                
+Please answer the question clearly based on the provided data."""
 
-        # ==================== Groq 呼叫 ====================
+        # ==================== Groq Call ====================
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1000
         )
-
+        
         answer = response.choices[0].message.content.strip()
 
-        print("💡 推薦分析與建議：")
+        print("💡 Recommendation & Analysis:")
         print(answer)
         print("\n" + "="*85)
 
@@ -137,5 +136,5 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
         return answer, retrieved
 
     except Exception as e:
-        print("錯誤:", str(e))
-        return "抱歉，系統目前發生錯誤，請稍後再試。", pd.DataFrame()
+        print("Error:", str(e))
+        return "Sorry, the system is currently busy. Please try again later.", pd.DataFrame()
