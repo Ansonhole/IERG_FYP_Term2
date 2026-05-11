@@ -62,5 +62,27 @@ async def recommend(request: QueryRequest):
         traceback.print_exc()
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
+@app.post("/evaluate")
+async def evaluate(request: dict):
+    try:
+        user_query = request.get("query")
+        recommended_ids = request.get("recommended_ids", [])
+        ground_truth_ids = request.get("ground_truth_ids", [])   # 用戶勾選的好的推薦
+
+        from src.evaluator import calculate_metrics, save_evaluation_log
+        
+        metrics = calculate_metrics(recommended_ids, ground_truth_ids, k=5)
+        
+        save_evaluation_log(user_query, recommended_ids, ground_truth_ids, metrics)
+        
+        return JSONResponse({
+            "success": True,
+            "metrics": metrics,
+            "message": "感謝你的評估！已記錄本次推薦品質。"
+        })
+        
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000)
