@@ -43,6 +43,20 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
 
         is_college_mode = isinstance(user_profile, dict) and user_profile.get("mode") == "college"
 
+        print("📊 Top Recommendations:\n")
+        for i, (_, row) in enumerate(retrieved.iterrows(), 1):
+            score = row.get('final_score', row.get('similarity_score', 0))
+            if row.get('type') == "college_choice":
+                title = row.get('college', 'Unknown College')
+                print(f"【{i}】 {title}   |   Score: {score:.4f}")
+                print(f"    Q: {row.get('question')[:150]}...")
+            else:
+                title = row.get('job_title', row.get('title', 'Untitled'))
+                company = row.get('company_name', row.get('company', 'Unknown'))
+                print(f"【{i}】 {title}")
+                print(f"    Company: {company}   |   Score: {score:.4f}")
+            print("-" * 70)
+
         # ==================== Prompt Selection (English) ====================
         if is_college_mode:
             context = retrieved.to_string(index=False)
