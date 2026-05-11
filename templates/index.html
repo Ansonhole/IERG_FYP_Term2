@@ -74,6 +74,54 @@
             chat.scrollTop = chat.scrollHeight;
         }
 
+        function showEvaluation(recommendedIds) {
+            lastRecommendedIds = recommendedIds || [];
+            if (lastRecommendedIds.length === 0) return;
+
+            const evalDiv = document.createElement("div");
+            evalDiv.className = "evaluation-box";
+            evalDiv.innerHTML = `
+                <strong>📊 請評估本次推薦結果</strong><br>
+                <small>勾選你覺得「適合 / 有用」的推薦項目（可複選）</small><br><br>
+                ${lastRecommendedIds.map((id, idx) => `
+                    <label class="recommend-item">
+                        <input type="checkbox" value="${id}" class="eval-check"> 
+                        【${idx+1}】 ID: ${id}
+                    </label><br>
+                `).join('')}
+                <br>
+                <button onclick="submitEvaluation()" style="padding:8px 16px; background:#0066cc; color:white; border:none; border-radius:6px;">提交評估</button>
+            `;
+            chat.appendChild(evalDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        async function submitEvaluation() {
+            const checked = Array.from(document.querySelectorAll('.eval-check:checked')).map(cb => cb.value);
+            
+            if (checked.length === 0) {
+                alert("請至少勾選一項推薦！");
+                return;
+            }
+
+            try {
+                const res = await fetch("/evaluate", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        query: "用戶評估本次推薦",
+                        recommended_ids: lastRecommendedIds,
+                        ground_truth_ids: checked
+                    })
+                });
+
+                const data = await res.json();
+                addMessage("received", "✅ " + (data.message || "感謝你的評估！"));
+            } catch (err) {
+                addMessage("received", "❌ 評估提交失敗，請稍後再試。");
+            }
+        }
+
         function switchMode() {
             currentMode = parseInt(document.getElementById("mode").value);
             chat.innerHTML = "";
@@ -142,7 +190,18 @@
                     });
 
                     const data = await res.json();
-                    addMessage("received", data.success ? data.answer : "錯誤：" + data.error);
+                    if (data.success) {
+                        addMessage("received", data.answer);
+                        
+                        // 如果有推薦結果，顯示評估功能
+                        if (data.recommended_ids && data.recommended_ids.length > 0) {
+                            setTimeout(() => {
+                                showEvaluation(data.recommended_ids);
+                            }, 800);
+                        }
+                    } else {
+                        addMessage("received", "錯誤：" + (data.error || "無法取得回應"));
+                    }
                 } catch (err) {
                     addMessage("received", "網路錯誤，請稍後再試。");
                 }
