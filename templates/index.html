@@ -51,7 +51,26 @@
             const div = document.createElement("div");
             div.className = `message ${type}`;
             div.textContent = text;
-            chat.appendChild(div);
+            if (type === "received" && (text.includes("【") || text.includes("Score:"))) {
+                const items = text.split(/【\d+】/);  // 按 【1】、【2】 分割
+                items.forEach((item, index) => {
+                    if (item.trim() === "") return;
+                    if (index === 0 && !item.includes("Score:")) {
+                        const p = document.createElement("div");
+                        p.className = "message received";
+                        p.textContent = item.trim();
+                        chat.appendChild(p);
+                    } else if (item.trim()) {
+                        const p = document.createElement("div");
+                        p.className = "message received";
+                        p.textContent = "【" + (index) + "】" + item.trim();
+                        chat.appendChild(p);
+                    }
+                });
+            } else {
+                div.textContent = text;
+                chat.appendChild(div);
+            }
             chat.scrollTop = chat.scrollHeight;
         }
 
