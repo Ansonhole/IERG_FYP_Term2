@@ -76,7 +76,17 @@ Here are the retrieved colleges with their matching scores:
 User Question: {user_query}
 
 Please recommend the most suitable college(s) based on the data above.
-For each recommendation, please include its Score and clearly explain why it is suitable."""
+For each recommendation, please include its Score and clearly explain why it is suitable.
+
+**Important**: For each recommendation, output in this exact format:
+
+【1】 College Name (Score: X.XXXX)
+Explanation: ...
+
+【2】 College Name (Score: X.XXXX)
+Explanation: ...
+
+Make each recommendation clear and separate."""
             else:
                 prompt = f"""You are a professional CUHK college selection advisor.
 
@@ -111,7 +121,17 @@ Here are the retrieved job opportunities with their matching scores:
 User Question: {user_query}
 
 Please recommend the most suitable positions. 
-For each recommendation, please include its Score and clearly explain why it is a good match for the student."""
+For each recommendation, please include its Score and clearly explain why it is a good match for the student.
+
+**Important**: For each recommendation, output in this exact format:
+
+【1】 Job Title at Company (Score: X.XXXX)
+Explanation: ...
+
+【2】 Job Title at Company (Score: X.XXXX)
+Explanation: ...
+
+Make each recommendation clear and separate."""
             else:
                 prompt = f"""You are a professional CUHK Engineering career advisor.
 
