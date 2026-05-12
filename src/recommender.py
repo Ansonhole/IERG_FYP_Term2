@@ -96,6 +96,7 @@ Explanation: ...
 
 Make each recommendation clear and separate."""
             else:
+                recommended_ids = 0
                 prompt = f"""You are a professional CUHK college selection advisor.
 
 Student's Preferences:
@@ -141,6 +142,7 @@ Explanation: ...
 
 Make each recommendation clear and separate."""
             else:
+                recommended_ids = 0
                 prompt = f"""You are a professional CUHK Engineering career advisor.
 
 Student Background:
