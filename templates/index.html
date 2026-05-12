@@ -55,6 +55,16 @@
         const queryInput = document.getElementById("query");
         const sendBtn = document.getElementById("sendBtn");
 
+        function getCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 12小時制
+            return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        }
+
         function addMessage(type, text) {
             const div = document.createElement("div");
             div.className = `message ${type}`;
@@ -67,16 +77,28 @@
                         const p = document.createElement("div");
                         p.className = "message received";
                         p.textContent = item.trim();
+                        div.innerHTML = `
+                            ${text.replace(/\n/g, '<br>')}
+                            <span class="message-time">${getCurrentTime()}</span>
+                        `;
                         chat.appendChild(p);
                     } else if (item.trim()) {
                         const p = document.createElement("div");
                         p.className = "message received";
                         p.textContent = "【" + (index) + "】" + item.trim();
+                        div.innerHTML = `
+                            ${text.replace(/\n/g, '<br>')}
+                            <span class="message-time">${getCurrentTime()}</span>
+                        `;
                         chat.appendChild(p);
                     }
                 });
             } else {
                 div.textContent = text;
+                div.innerHTML = `
+                    ${text.replace(/\n/g, '<br>')}
+                    <span class="message-time">${getCurrentTime()}</span>
+                `;
                 chat.appendChild(div);
             }
             chat.scrollTop = chat.scrollHeight;
