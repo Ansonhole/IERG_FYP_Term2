@@ -109,14 +109,16 @@
             lastRecommendedIds = recommendedIds || [];
             if (lastRecommendedIds.length === 0) return;
 
+            const displayCount = totalRecommendations > 0 ? totalRecommendations : lastRecommendedIds.length;
+
             const evalDiv = document.createElement("div");
             evalDiv.className = "evaluation-box";
             evalDiv.innerHTML = `
                 <strong>📊 Please evaluate the results of this recommendation.</strong><br>
                 <small>Select the recommended items that you find "suitable/useful" (multiple selections are allowed).</small><br><br>
-                ${lastRecommendedIds.map((id, idx) => `
+                ${Array.from({ length: displayCount }, (_, idx) => `
                     <label class="recommend-item">
-                        <input type="checkbox" value="${id}" class="eval-check"> 
+                        <input type="checkbox" value="${lastRecommendedIds[idx] || idx}" class="eval-check"> 
                         【${idx+1}】 Suggestion ${idx+1}
                     </label><br>
                 `).join('')}
