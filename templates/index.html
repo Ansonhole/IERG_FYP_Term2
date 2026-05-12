@@ -70,6 +70,7 @@
                 const items = text.split(/【\d+】/);  // 按 【1】、【2】 分割
                 const validItems = items.filter(item => item.trim() !== "");
                 const totalRecommendations = validItems.length;
+                div.textContent = totalRecommendations;
                 items.forEach((item, index) => {
                     if (item.trim() === "") return;
                     if (index === 0 && !item.includes("Score:")) {
