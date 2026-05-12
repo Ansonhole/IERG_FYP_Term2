@@ -142,7 +142,6 @@ Explanation: ...
 
 Make each recommendation clear and separate."""
             else:
-                recommended_ids = "0"
                 prompt = f"""You are a professional CUHK Engineering career advisor.
 
 Student Background:
@@ -174,7 +173,7 @@ Please answer the question clearly based on the provided data."""
 
         log_feedback(user_query, user_profile, recommended_ids, "web_auto")
 
-        return answer, retrieved, recommended_ids
+        return answer, retrieved, recommended_ids, is_recommendation_intent
 
     except Exception as e:
         print("Error:", str(e))
