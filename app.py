@@ -53,7 +53,7 @@ async def recommend(request: QueryRequest):
         else:
             user_profile = None
 
-        answer, results, recommended_ids = generate_recommendation(request.query, user_profile)
+        answer, results, recommended_ids, is_recommendation_intent = generate_recommendation(request.query, user_profile)
 
         recommend_keywords = ["推薦", "suggest", "最適合", "suitable", "找工作", "找實習", "recommend", "best for me", "學院推薦"]
         is_recommendation_intent = any(kw in request.query.lower() for kw in recommend_keywords)
