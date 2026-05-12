@@ -35,6 +35,8 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
 
         retrieved = retrieve_top_k(user_query, user_profile, top_k=top_k)
         if not retrieved.empty:
+            retrieved['id'] = retrieved['id'].fillna('unknown')
+            retrieved['id'] = retrieved['id'].astype(str)
             if 'final_score' in retrieved.columns:
                 retrieved['final_score'] = retrieved['final_score'].fillna(0.0)
             if 'similarity_score' in retrieved.columns:
