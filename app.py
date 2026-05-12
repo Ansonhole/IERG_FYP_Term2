@@ -69,9 +69,9 @@ async def recommend(request: QueryRequest):
 @app.post("/evaluate")
 async def evaluate(request: dict):
     try:
-        user_query = request.get("query")
+        user_query = request.get("query", "")
         recommended_ids = request.get("recommended_ids", [])
-        ground_truth_ids = request.get("ground_truth_ids", [])   # 用戶勾選的好的推薦
+        ground_truth_ids = request.get("ground_truth_ids", [])
 
         from src.evaluator import calculate_metrics, save_evaluation_log
         
@@ -86,6 +86,7 @@ async def evaluate(request: dict):
         })
         
     except Exception as e:
+        traceback.print_exc()
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
 if __name__ == "__main__":
