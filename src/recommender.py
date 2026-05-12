@@ -34,6 +34,12 @@ def generate_recommendation(user_query: str, user_profile=None, top_k: int = 6):
         is_recommendation_intent = any(kw in user_query.lower() for kw in recommend_keywords)
 
         retrieved = retrieve_top_k(user_query, user_profile, top_k=top_k)
+        if not retrieved.empty:
+            if 'final_score' in retrieved.columns:
+                retrieved['final_score'] = retrieved['final_score'].fillna(0.0)
+            if 'similarity_score' in retrieved.columns:
+                retrieved['similarity_score'] = retrieved['similarity_score'].fillna(0.0)
+                
         recommended_ids = retrieved['id'].astype(str).tolist() if not retrieved.empty else []
 
         print("\n" + "="*85)
