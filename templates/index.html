@@ -68,6 +68,8 @@
             div.textContent = text;
             if (type === "received" && (text.includes("【") || text.includes("Score:"))) {
                 const items = text.split(/【\d+】/);  // 按 【1】、【2】 分割
+                const validItems = items.filter(item => item.trim() !== "");
+                const totalRecommendations = validItems.length;
                 items.forEach((item, index) => {
                     if (item.trim() === "") return;
                     if (index === 0 && !item.includes("Score:")) {
@@ -89,6 +91,7 @@
                         `;
                         chat.appendChild(p);
                     }
+                    
                 });
             } else {
                 div.textContent = text;
@@ -222,6 +225,8 @@
                         
                         // 如果有推薦結果，顯示評估功能
                         if (data.is_recommendation_intent && data.recommended_ids.length > 0) {
+                            const totalRecommendations = data.recommended_ids.length;
+                            addMessage("received", `📊 本次共收到 ${totalRecommendations} 個推薦`);
                             setTimeout(() => {
                                 showEvaluation(data.recommended_ids);
                             }, 800);
