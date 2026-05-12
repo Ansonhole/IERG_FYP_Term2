@@ -61,7 +61,7 @@ async def recommend(request: QueryRequest):
         return JSONResponse({
             "success": True, 
             "answer": answer,
-            "recommended_ids": recommended_ids   # 新增這行
+            "recommended_ids": recommended_ids,   # 新增這行
             "is_recommendation_intent": is_recommendation_intent
         })
 
