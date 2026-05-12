@@ -44,7 +44,7 @@ def calculate_metrics(recommended_ids, ground_truth_ids, k=5):
 
 def save_evaluation_log(user_query, recommended_ids, ground_truth_ids, metrics):
     """儲存評估記錄"""
-    log_file = "data/evaluation_log.csv"
+    log_file = "data/user_feedback_log.csv"
     os.makedirs("data", exist_ok=True)
     
     row = {
