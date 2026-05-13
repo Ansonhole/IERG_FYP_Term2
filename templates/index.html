@@ -37,7 +37,7 @@
 
         <div class="input-area">
             <input type="text" id="query" placeholder="Input..." style="width:100%; padding:12px; border-radius:8px;">
-            <button id="sendBtn" style="margin-top:8px; width:100%; padding:12px; background:#0066cc; color:white; border:none; border-radius:8px;">Summit</button>
+            <button id="sendBtn" style="margin-top:8px; width:100%; padding:12px; background:#0066cc; color:white; border:none; border-radius:8px;">Submit</button>
         </div>
     </div>
 
@@ -228,7 +228,6 @@
                         
                         // 如果有推薦結果，顯示評估功能
                         if (data.is_recommendation_intent && data.recommended_ids.length > 0) {
-                            addMessage("received", `📊 本次共收到 ${totalRecommendations} 個推薦`);
                             setTimeout(() => {
                                 showEvaluation(data.recommended_ids);
                             }, 800);
